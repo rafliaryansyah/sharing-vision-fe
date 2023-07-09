@@ -185,7 +185,7 @@ const CreateArticle = () => {
                         <Form onSubmit={handleSubmitForm}>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="title" for="title">Title</CFormLabel>
+                                    <CFormLabel htmlFor="title">Title</CFormLabel>
                                     <CFormInput
                                         value={form.title}
                                         name="title"
@@ -202,7 +202,7 @@ const CreateArticle = () => {
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="content" for="content">Content</CFormLabel>
+                                    <CFormLabel htmlFor="content">Content</CFormLabel>
                                     <CFormTextarea name="content" value={form.content} onChange={handleChangeInput} id="exampleFormControlTextarea1" rows="3" placeholder="LMAO"></CFormTextarea>
                                     {error.content && (
                                         <FormText color="danger">{error.content}</FormText>
@@ -211,7 +211,7 @@ const CreateArticle = () => {
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="category" for="category">Category</CFormLabel>
+                                    <CFormLabel htmlFor="category">Category</CFormLabel>
                                     <CFormInput
                                         name="category"
                                         value={form.category}
@@ -228,7 +228,7 @@ const CreateArticle = () => {
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="status" for="status">Status</CFormLabel>
+                                    <CFormLabel htmlFor="status">Status</CFormLabel>
                                     <CFormSelect name="status" value={form.status} onChange={handleChangeInput} className="mb-3" aria-label="Small select example">
                                         <option>Open this select menu</option>
                                         <option value="Publish">Publish</option>
