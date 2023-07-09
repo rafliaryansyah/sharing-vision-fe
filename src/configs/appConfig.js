@@ -5,7 +5,7 @@ const appInfo = {
 
 const appConfig = {
   baseUrl: {
-    api: 'http://localhost:8080',
+    api: 'https://sv.hsd-api.com',
   },
 }
 
