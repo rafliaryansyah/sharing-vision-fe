@@ -19,46 +19,97 @@ import {
 } from '@coreui/react'
 import { DocsExample } from 'src/components'
 import { Button, FormGroup } from 'reactstrap'
-import PropTypes from 'prop-types'
 import { deleteArticle, getArticles, pageLoading, showPopup } from 'src/services'
+import { useNavigate } from 'react-router-dom'
 
-const Articles = ({ history }) => {
+const Articles = () => {
+  const [refreshData, setRefreshData] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const history = useNavigate()
   const [articles, setArticles] = useState([])
+  
   useEffect(() => {
-    fetch('http://localhost:8080/article')
-      .then((response) => response.json())
-      .then((data) => setArticles(data.data))
-      .catch((error) => console.log(error))
-  }, [])
+    const fetchData = async () => {
+      try {
+        const response = await getArticles(currentPage); // Menggunakan getArticles tanpa paginasi
+        const data = response.data;
+        setArticles(data);
+        setRefreshData(false)
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    fetchData();
+  }, [currentPage, refreshData]);
 
   const handlePressEdit = articleId => {
-    window.location.href = `#/article/edit/${articleId}`
+    history(`/article/edit/${articleId}`);
   }
 
-  const handlePressDelete = (articleData) => {
-    // Menggunakan window.confirm untuk memunculkan popup konfirmasi
-    if (window.confirm('Are you sure you want to delete this article?')) {
-      submitDelete(articleData);
-    }
-  };
-
-  const submitDelete = async (articleData) => {
+  const submitDelete = async articleId => {
+    console.log('SUMBIT DELETE => ', articleId)
     try {
       pageLoading(true);
-      await deleteArticle(articleData);
-      await getArticles()
+      await deleteArticle(articleId);
+      await getArticles(currentPage);
       pageLoading(false);
       showPopup({
         title: 'Completed!',
-        message: 'Berhasil menghapus artikel.',
-      });
+        message: 'Data was removed from table'
+      })
+      setRefreshData(true)
     } catch (err) {
       pageLoading(false);
       showPopup({
         title: 'Error!',
-        message: err?.message || 'Something went wrong!',
-      });
+        message: err?.message || 'Something Wrong!'
+      })
     }
+
+  }    
+
+  const handlePressDelete = id => {
+    showPopup({
+      title: 'Warning!',
+      message: (
+        <p>Wanna to delete article from table?</p>
+      ),
+      leftButtonTitle: 'Yes',
+      rightButtonTitle: 'No',
+      onPressLeft: () => submitDelete(id),
+      onPressRight: () => { }
+    });
+  }
+
+  const handlePageClick = page => {
+    console.log('handlePageClick => ', page)
+    setCurrentPage(page);
+  };
+
+  const renderPaginationItems = () => {
+    const totalPages = 10; // Jumlah total halaman yang tersedia
+    const paginationRange = 3; // Jumlah nomor halaman yang ditampilkan di preview
+
+    const start = Math.max(1, currentPage - paginationRange);
+    const end = Math.min(totalPages, currentPage + paginationRange);
+
+    const paginationItems = [];
+
+    for (let i = start; i <= end; i++) {
+      paginationItems.push(
+        <CPaginationItem
+          key={i}
+          active={i === currentPage}
+          onClick={() => handlePageClick(i)}
+        >
+          {i}
+        </CPaginationItem>
+      );
+    }
+
+    return paginationItems;
   };
 
   return (
@@ -70,22 +121,22 @@ const Articles = ({ history }) => {
           </CCardHeader>
           <CCardBody>
             <FormGroup>
-              <Button onClick={() => window.location.href = '#/article/create' } color="primary">Create Article</Button>
+              <Button onClick={() => history(`/article/create`)} color="primary">Create Article</Button>
             </FormGroup>
             <DocsExample href="components/table">
               <CTable>
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Title</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Category</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Status</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Action</CTableHeaderCell>
+                    <CTableHeaderCell scope="Title">Title</CTableHeaderCell>
+                    <CTableHeaderCell scope="Category">Category</CTableHeaderCell>
+                    <CTableHeaderCell scope="Status">Status</CTableHeaderCell>
+                    <CTableHeaderCell scope="Action">Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                   {articles.map((article, index) => (
-                    <CTableRow>
+                    <CTableRow key={article.id}>
                       <CTableHeaderCell scope="row" key={article.id}>
                         {index + 1}
                       </CTableHeaderCell>
@@ -102,25 +153,30 @@ const Articles = ({ history }) => {
               </CTable>
             </DocsExample>
             <CPagination aria-label="Page navigation example">
-                <CPaginationItem aria-label="Previous" disabled>
-                  <span aria-hidden="true">&laquo;</span>
-                </CPaginationItem>
-                <CPaginationItem active>1</CPaginationItem>
-                <CPaginationItem>2</CPaginationItem>
-                <CPaginationItem>3</CPaginationItem>
-                <CPaginationItem aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                </CPaginationItem>
-              </CPagination>
+              <CPaginationItem
+                aria-label="Previous"
+                onClick={() =>
+                  handlePageClick(Math.max(currentPage - 1, 1))
+                }
+                disabled={currentPage === 1}
+              >
+                <span aria-hidden="true">&laquo;</span>
+              </CPaginationItem>
+              {renderPaginationItems()}
+              <CPaginationItem
+                aria-label="Next"
+                onClick={() =>
+                  handlePageClick(Math.min(currentPage + 1, 10))
+                }
+                disabled={currentPage === -1}
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </CPaginationItem>
+            </CPagination>
           </CCardBody>
         </CCard>
       </CCol>
     </CRow>
   )
 }
-
-Articles.propTypes = {
-  history: PropTypes.object.isRequired
-}
-
 export default Articles

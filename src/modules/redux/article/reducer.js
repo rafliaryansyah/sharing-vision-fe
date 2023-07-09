@@ -1,7 +1,7 @@
 import actionTypes from '../actionTypes'
 
 const initialState = {
-  list: {
+  data: {
     data: [],
     loading: false,
     meta: {
@@ -18,15 +18,15 @@ export default function article(state = initialState, action) {
     case actionTypes.article.SET_ARTICLE_LIST:
       return {
         ...state,
-        list: {
-          ...state.list,
+        data: {
+          ...state.data,
           ...action.value,
         },
       }
     case actionTypes.article.CLEAR_ARTICLE_LIST:
       return {
         ...state,
-        list: initialState,
+        data: initialState,
       }
     default:
       return state

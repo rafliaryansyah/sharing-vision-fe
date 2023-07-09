@@ -1,9 +1,9 @@
 /**
- * @name userListSelector
- * @description selector for get list from user reducer
+ * @name articleListSelector
+ * @description selector for get list from article reducer
  * @param {*} state store
- * @returns user list object
+ * @returns article list object
  */
-export const userListSelector = function (state) {
-  return state.user.list
+export const articleListSelector = function (state) {
+  return state.article.data
 }

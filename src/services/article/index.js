@@ -1,40 +1,42 @@
 import { API } from '../../configs'
 import { store, setArticleList } from '../../modules'
-import { helper } from '../../utils'
 
 /**
  * @name getArticles
  * @description service call for get article list data
  * @param {*} payload
  */
-export const getArticles = async function (payload) {
+export const getArticles = async function (id) {
+  const payload = {
+    path: `?limit=10&offset=${id}`,
+  }
+  console.log('Service.getArticles')
   store.dispatch(setArticleList({ loading: true }))
   const response = await API.getArticles(payload)
-
   if (!response || !response.data) {
     store.dispatch(setArticleList({ loading: false }))
     throw response
   }
 
-  if (payload?.pagination) {
-    const { data, total } = response
-    //calculate totalpage
-    const totalPage = helper.getPaginationTotalPage(total, payload?.pagination?.limit)
+  // if (payload?.pagination) {
+  //   const { data, total } = response
+  //   //calculate totalpage
+  //   const totalPage = helper.getPaginationTotalPage(total, payload?.meta?.total)
 
-    store.dispatch(
-      setArticleList({
-        loading: false,
-        pagination: {
-          page: payload?.pagination?.page,
-          total,
-          totalPage,
-        },
-        data,
-      }),
-    )
+  //   store.dispatch(
+  //     setArticleList({
+  //       loading: false,
+  //       pagination: {
+  //         page: payload?.meta?.page,
+  //         total,
+  //         totalPage,
+  //       },
+  //       data,
+  //     }),
+  //   )
 
-    return response
-  }
+  //   return response
+  // }
 
   const { data } = response
 
@@ -44,7 +46,6 @@ export const getArticles = async function (payload) {
       data,
     }),
   )
-  console.log('response GetARTICLES => ', response)
   return response
 }
 
@@ -57,7 +58,7 @@ export const getArticles = async function (payload) {
 export const getArticleById = async function (id) {
   console.log('getArticleById')
   const payload = {
-    path: id,
+    path: `/${id}`,
   }
   const response = await API.getArticle(payload)
 
@@ -85,14 +86,12 @@ export const getArticleById = async function (id) {
  * @returns
  */
 export const createArticle = async function (form) {
+  console.log('createaArticle 2', form)
   const payload = {
     body: form,
   }
-
-  console.log('PAYLOAD REQUEST BODY => ', payload.body)
-
+  console.log('createaArticle', payload)
   const response = await API.insertArticle(payload)
-
   if (!response) {
     throw response
   }
@@ -109,7 +108,7 @@ export const createArticle = async function (form) {
  */
 export const updateArticle = async function (id, form) {
   const payload = {
-    path: id,
+    path: `/${id}`,
     body: form,
   }
 
@@ -130,13 +129,13 @@ export const updateArticle = async function (id, form) {
  */
 export const deleteArticle = async function (id) {
   const payload = {
-    path: id,
+    path: `/${id}`,
   }
 
-  console.log('PAYLOAD => ', payload)
+  console.log('DELETE ARTICLE PAYLOAD => ', id)
 
   const response = await API.deleteArticle(payload)
-
+  console.log('DELETE ARTICLE response => ', response)
   if (!response) {
     throw response
   }

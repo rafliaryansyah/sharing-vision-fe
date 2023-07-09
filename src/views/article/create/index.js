@@ -2,7 +2,6 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-key */
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
     CCard,
     CCardBody,
@@ -14,23 +13,25 @@ import {
     CFormTextarea,
     CRow
 } from '@coreui/react'
-import { Button, Form, FormGroup, FormText } from 'reactstrap';
+import { Button, Form, FormGroup, FormText } from "reactstrap";
 import { createArticle, getArticleById, showPopup, updateArticle } from 'src/services';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const CreateArticle = ({ history, match }) => {
+const CreateArticle = () => {
 
-    const articleId = match?.params?.articleId;
+    const history = useNavigate()
+    const { articleId } = useParams();
     const isEdit = articleId ? true : false;
     const [form, setForm] = useState({
         title: '',
         content: '',
         category: '',
         status: ''
-    })
+    });
     const [loading, setLoading] = useState(false);
-    const handleChangeInput = e => {
-        const { name, value } = e.target;
-        setForm(value, name);
+    const handleChangeInput = (e) => {
+        const { name, value } = e.target
+        setForm({ ...form, [name]: value })
     }
     const [error, setError] = useState({
         title: '',
@@ -39,49 +40,73 @@ const CreateArticle = ({ history, match }) => {
         status: ''
     });
     const validation = () => {
-        let hasError = false;
+        let isError = false;
+        const newError = {
+            title: '',
+            content: '',
+            category: '',
+            status: ''
+        };
 
-        Object.keys(error).forEach(field => {
-            let fieldError = false;
-            if (!form[field]) {
-                hasError = true;
-                fieldError = true;
-                setError(`${field} is required`, field);
-            }
+        if (!form.title) {
+            newError.title = 'Title is required';
+            isError = true;
+        } else if (form.title.length < 20) {
+            newError.title = 'Title must be at least 20 characters';
+            isError = true;
+        }
 
-            if (form[field] && (field === 'title') && form[field].length < 20) {
-                hasError = true;
-                fieldError = true;
-                setError(`${field} minimum 20 characters`, field);
-            }
+        if (!form.content) {
+            newError.content = 'Content is required';
+            isError = true;
+        } else if (form.content.length < 200) {
+            newError.content = 'Content must be at least 200 characters';
+            isError = true;
+        }
 
-            if (form[field] && (field === 'content') && form[field].length < 200) {
-                hasError = true;
-                fieldError = true;
-                setError(`${field} minimum 200 characters`, field);
-            }
+        if (!form.category) {
+            newError.category = 'Category is required';
+            isError = true;
+        } else if (form.category.length < 3) {
+            newError.category = 'Category must be at least 3 characters';
+            isError = true;
+        }
 
-            if (form[field] && (field === 'category') && form[field].length < 3) {
-                hasError = true;
-                fieldError = true;
-                setError(`${field} minimum 3 characters`, field);
-            }
+        if (!form.status) {
+            newError.status = 'Status is required';
+            isError = true;
+        } else if (!['publish', 'draft', 'thrash'].includes(form.status.toLowerCase())) {
+            newError.status = 'Invalid status value';
+            isError = true;
+        }
 
-            if (form[field] && field === 'status') {
-                const validOptions = ["Publish", "Draft", "Thrash"];
-                if (!validOptions.includes(form[field])) {
-                    hasError = true;
-                    fieldError = true;
-                    setError(`Opsi ${field} tidak valid`, field);
-                }
-            }
+        setError(newError);
+        return isError;
+    };
 
-            if (!fieldError) {
-                setError('', field);
-            }
-        })
-        return hasError;
-    }
+    const handlePressCancel = () => {
+        if (isEdit) {
+            return showPopup({
+                title: 'Warning!',
+                message: 'Are you sure you cancel?',
+                leftButtonTitle: 'Yes',
+                rightButtonTitle: 'No',
+                onPressLeft: () => history('/article'),
+                onPressRight: () => { }
+            })
+        }
+        if (form.title || form.content || form.category || form.status) {
+            return showPopup({
+                title: 'Warning!',
+                message: 'Are you sure you cancel? the data will be lost',
+                leftButtonTitle: 'Yes',
+                rightButtonTitle: 'No',
+                onPressLeft: () => history('/article'),
+                onPressRight: () => { }
+            })
+        }
+        return history('/article')
+    };
 
     const handleSubmitForm = async e => {
         if (e) e.preventDefault();
@@ -92,13 +117,13 @@ const CreateArticle = ({ history, match }) => {
             return;
         }
 
-
         try {
             setLoading(true);
             if (isEdit) {
                 await updateArticle(articleId, form);
             } else {
-                await createArticle(form);
+                await createArticle(JSON.stringify(form));
+                // history.push('#/article')
             }
             setLoading(false);
 
@@ -108,7 +133,7 @@ const CreateArticle = ({ history, match }) => {
                     content: '',
                     category: '',
                     status: '',
-                })
+                }, 'reset')
             }
             showPopup({
                 title: 'Completed!',
@@ -126,14 +151,13 @@ const CreateArticle = ({ history, match }) => {
     const getArticleData = useCallback(() => {
         setLoading(true);
         getArticleById(articleId).then(data => {
-            console.log('getArticleById => ', data)
             setLoading(false);
             setForm({
                 title: data?.title,
                 content: data?.content,
                 category: data?.category,
                 status: data?.status,
-            }, 'multiple')
+            })
         }).catch(err => {
             setLoading(false);
             showPopup({
@@ -147,10 +171,9 @@ const CreateArticle = ({ history, match }) => {
 
     useEffect(() => {
         if (articleId) {
-            getArticleById()
+            getArticleData()
         }
     }, [getArticleData, articleId])
-    console.log('LMAOOOOOOO', 'EDIT', 'CREATE', form, getArticleById(articleId))
     return (
         <CRow>
             <CCol xs={12}>
@@ -162,23 +185,25 @@ const CreateArticle = ({ history, match }) => {
                         <Form onSubmit={handleSubmitForm}>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="exampleFormControlInput1">Title</CFormLabel>
+                                    <CFormLabel htmlFor="title" for="title">Title</CFormLabel>
                                     <CFormInput
                                         value={form.title}
+                                        name="title"
                                         onChange={handleChangeInput}
+                                        autoComplete='off'
                                         type="text"
                                         id="exampleFormControlInput1"
                                         placeholder="e.g: Lorem ipsum doler si amet"
                                     />
-                                    {error.name && (
+                                    {error.title && (
                                         <FormText color="danger">{error.title}</FormText>
                                     )}
                                 </div>
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="exampleFormControlTextarea1">Content</CFormLabel>
-                                    <CFormTextarea value={form.content} onChange={handleChangeInput} id="exampleFormControlTextarea1" rows="3" placeholder="LMAO"></CFormTextarea>
+                                    <CFormLabel htmlFor="content" for="content">Content</CFormLabel>
+                                    <CFormTextarea name="content" value={form.content} onChange={handleChangeInput} id="exampleFormControlTextarea1" rows="3" placeholder="LMAO"></CFormTextarea>
                                     {error.content && (
                                         <FormText color="danger">{error.content}</FormText>
                                     )}
@@ -186,10 +211,12 @@ const CreateArticle = ({ history, match }) => {
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="exampleFormControlInput1">Category</CFormLabel>
+                                    <CFormLabel htmlFor="category" for="category">Category</CFormLabel>
                                     <CFormInput
+                                        name="category"
                                         value={form.category}
                                         onChange={handleChangeInput}
+                                        autoComplete='off'
                                         type="text"
                                         id="exampleFormControlInput1"
                                         placeholder="e.g: Lorem ipsum doler si amet"
@@ -201,31 +228,25 @@ const CreateArticle = ({ history, match }) => {
                             </FormGroup>
                             <FormGroup>
                                 <div className="mb-3">
-                                    <CFormLabel htmlFor="exampleFormControlInput1">Status</CFormLabel>
-                                    <CFormSelect value={form.status} onChange={handleChangeInput} className="mb-3" aria-label="Small select example">
+                                    <CFormLabel htmlFor="status" for="status">Status</CFormLabel>
+                                    <CFormSelect name="status" value={form.status} onChange={handleChangeInput} className="mb-3" aria-label="Small select example">
                                         <option>Open this select menu</option>
                                         <option value="Publish">Publish</option>
                                         <option value="Draft">Draft</option>
-                                        <option value="Thrash">Thrash</option>
                                     </CFormSelect>
                                     {error.status && (
                                         <FormText color="danger">{error.status}</FormText>
                                     )}
                                 </div>
                             </FormGroup>
-                            <Button disabled={loading} color="success" className="mr-2">SS</Button>
-                            <Button type='button' color="danger" className="ml-2" style={{ color: 'white' }}>Cancel</Button>
+                            <Button disabled={loading} type='submit' color="success" className="mr-2">{loading ? 'Saving...' : 'Save'}</Button>
+                            <Button disabled={loading}  onClick={handlePressCancel} type='button' color="danger" className="ml-2" style={{ color: 'white' }}>Cancel</Button>
                         </Form>
                     </CCardBody>
                 </CCard>
             </CCol>
         </CRow>
     )
-}
-
-CreateArticle.propTypes = {
-    history: PropTypes.object.isRequired,
-    match: PropTypes.object.isRequired
 }
 
 export default CreateArticle
