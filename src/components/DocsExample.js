@@ -13,17 +13,23 @@ const DocsExample = (props) => {
     <div className="example">
       <CNav variant="tabs">
         <CNavItem>
-          <CNavLink href="/#/article" active>
+          <CNavLink active>
             <CIcon icon={cilMediaPlay} className="me-2" />
-            Articles
+            Publish
           </CNavLink>
         </CNavItem>
-        {/* <CNavItem>
-          <CNavLink href={_href} target="_blank">
-            <CIcon icon={cilCode} className="me-2" />
-            Code
+        <CNavItem>
+          <CNavLink active>
+            <CIcon icon={cilMediaPlay} className="me-2" />
+            Thrash
           </CNavLink>
-        </CNavItem> */}
+        </CNavItem>
+        <CNavItem>
+          <CNavLink active>
+            <CIcon icon={cilMediaPlay} className="me-2" />
+            Thrash
+          </CNavLink>
+        </CNavItem>
       </CNav>
       <CTabContent className="rounded-bottom">
         <CTabPane className="p-3 preview" visible>

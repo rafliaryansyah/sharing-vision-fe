@@ -17,7 +17,6 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-import { DocsExample } from 'src/components'
 import { Button, FormGroup } from 'reactstrap'
 import { deleteArticle, getArticles, pageLoading, showPopup } from 'src/services'
 import { useNavigate } from 'react-router-dom'
@@ -25,6 +24,7 @@ import { useNavigate } from 'react-router-dom'
 const Articles = () => {
   const [refreshData, setRefreshData] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterStatus, setFilterStatus] = useState(undefined);
 
   const history = useNavigate()
   const [articles, setArticles] = useState([])
@@ -32,7 +32,7 @@ const Articles = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getArticles(currentPage); // Menggunakan getArticles tanpa paginasi
+        const response = await getArticles(currentPage, filterStatus); // Menggunakan getArticles tanpa paginasi
         const data = response.data;
         setArticles(data);
         setRefreshData(false)
@@ -42,14 +42,13 @@ const Articles = () => {
     };
   
     fetchData();
-  }, [currentPage, refreshData]);
+  }, [currentPage, refreshData, filterStatus]);
 
   const handlePressEdit = articleId => {
     history(`/article/edit/${articleId}`);
   }
 
   const submitDelete = async articleId => {
-    console.log('SUMBIT DELETE => ', articleId)
     try {
       pageLoading(true);
       await deleteArticle(articleId);
@@ -112,6 +111,11 @@ const Articles = () => {
     return paginationItems;
   };
 
+  const handleButtonFilter = (status) => {
+    setFilterStatus(status)
+    setCurrentPage(1)
+  }
+
   return (
     <CRow>
       <CCol xs={12}>
@@ -123,7 +127,14 @@ const Articles = () => {
             <FormGroup>
               <Button onClick={() => history(`/article/create`)} color="primary">Create Article</Button>
             </FormGroup>
-            <DocsExample href="components/table">
+            <FormGroup>
+              <Button onClick={() => handleButtonFilter()} color="primary" className='m-2'>All status</Button>
+              <Button onClick={() => handleButtonFilter('Publish')} color="primary" className='m-2'>Publish</Button>
+              <Button onClick={() => handleButtonFilter('Draft')} color="secondary" className='m-2'>Draft</Button>
+              <Button onClick={() => handleButtonFilter('Thrash')} color="danger" className='m-2'>Thrash</Button>
+            </FormGroup>
+            <FormGroup>
+            </FormGroup>
               <CTable>
                 <CTableHead>
                   <CTableRow>
@@ -151,7 +162,6 @@ const Articles = () => {
                   ))}
                 </CTableBody>
               </CTable>
-            </DocsExample>
             <CPagination aria-label="Page navigation example">
               <CPaginationItem
                 aria-label="Previous"

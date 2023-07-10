@@ -6,9 +6,9 @@ import { store, setArticleList } from '../../modules'
  * @description service call for get article list data
  * @param {*} payload
  */
-export const getArticles = async function (id) {
+export const getArticles = async function (offset, status) {
   const payload = {
-    path: `?limit=10&offset=${id}`,
+    path: status ? `?limit=10&offset=${offset}&status=${status}` : `?limit=10&offset=${offset}`,
   }
   console.log('Service.getArticles')
   store.dispatch(setArticleList({ loading: true }))
