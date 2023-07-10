@@ -1,4 +1,4 @@
-[Frontend Live View](https://sv-fe.hsd-api.com)
+[Frontend Live View](https://sharing-vision-fe.vercel.app)
 
 [![@coreui coreui](https://img.shields.io/badge/@coreui%20-coreui-lightgrey.svg?style=flat-square)](https://github.com/coreui/coreui)
 [![npm package][npm-coreui-badge]][npm-coreui]
